@@ -168,8 +168,13 @@ def main():
     client = Client(api_key, locale)
 
     # read observations database
-    observations = pd.read_csv(args.input_csv)
-    observations = observations.sort_values(by=['OBERVER ID', 'OBSERVATION DATE'])
+    chunks = []
+    for df_chunk in pd.read_csv(args.input_csv,
+                                chunksize=10E5):
+        chunks.append(df_chunk)
+
+        # write output to csv
+    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID', 'OBSERVATION DATE'])
 
     # user breakpoints
     breaks = []
