@@ -182,23 +182,30 @@ def main():
     prev = 0
     for idx in range(len(observers) - 1):
         if observers[idx] != observers[idx + 1]:
-            if idx - prev > 40:
+            if idx - prev >= 40:
                 breaks.append([prev, idx + 1])
             prev = idx + 1
 
+    print(len(breaks))
     # create chunks
     chunks = (observations.iloc[range(chunk_idx[0], chunk_idx[1])] for chunk_idx in breaks)
-
-    # start multiprocessing pool
-    pool = Pool(args.cores)
 
     # read bird statistics dataframe
     bird_stats = pd.read_csv('Datasets/bird_stats.csv', index_col=0)
 
     # process observations in parallel
+    pool = Pool(args.cores)
+
+    out = []
+
+    for chunk in chunks:
+        out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
+    pool.close()
+    pool.join()
+
 
     start = time.time()
-    out = pool.map(partial(get_user_data, client=client, bird_stats=bird_stats), chunks)
+
     out = [ele for ele in out if type(ele) != bool]
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
