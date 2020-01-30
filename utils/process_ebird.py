@@ -1,12 +1,15 @@
 __all__ = ['get_user_data']
 
-import pandas as pd
 import datetime
-import numpy as np
-from shapely.geometry import Point
+import time
 from argparse import ArgumentParser
-from ebird.api import Client
+from functools import partial
 from multiprocessing import Pool
+
+import numpy as np
+import pandas as pd
+from ebird.api import Client
+from shapely.geometry import Point
 
 
 def parse_args():
@@ -26,15 +29,20 @@ def handle_numerical(nums):
 
 
 # processing function
-def get_user_data(user_data, client, latest=2015):
+def get_user_data(user_data, client, bird_stats, latest=2015):
+    """
+    Helper function to process data from observations of a single user
+    :param user_data:
+    :param client:
+    :param latest:
+    :return:
+    """
     # store user name
     try:
         user = client.get_checklist(user_data['SAMPLING EVENT IDENTIFIER'].iloc[0])['userDisplayName']
-    except:
+    except IndexError:
+        print('failed to load username')
         return False
-
-    # get user features
-    users_df = pd.DataFrame()
 
     # event data
     event_data = pd.DataFrame()
@@ -105,6 +113,14 @@ def get_user_data(user_data, client, latest=2015):
     percent_media = np.mean([int(ele) for ele in user_data['HAS MEDIA']])
     n_species = len(set(user_data['COMMON NAME']))
 
+    # species data
+    valid_obs = [spc for spc in user_data['COMMON NAME'] if spc in bird_stats.index]
+    species_size = np.mean([bird_stats.loc[spc, 'log_10_mass'] for spc in valid_obs])
+    species_color = np.mean([bird_stats.loc[spc, 'max_color_contrast'] for spc in valid_obs])
+    species_resident = np.mean([bird_stats.loc[spc, 'resident'] for spc in valid_obs])
+    species_introduced = np.mean([bird_stats.loc[spc, 'introduced'] for spc in valid_obs])
+    species_common = np.mean([bird_stats.loc[spc, 'commonness'] for spc in valid_obs])
+
     # get a sample checklist
     if percent_media > 0:
         checklist = np.random.choice(user_data.loc[user_data['HAS MEDIA'] == 1]['SAMPLING EVENT IDENTIFIER'])
@@ -114,25 +130,31 @@ def get_user_data(user_data, client, latest=2015):
     sample_checklist = f"https://ebird.org/checklist/{checklist}"
 
     # add user
-    users_df = users_df.append(pd.Series({'n_checklists': n_checklists,
-                                          'n_species': n_species,
-                                          'n_observations': n_observations,
-                                          'since': since,
-                                          'geometry': centroid,
-                                          'median_distance': median_distance,
-                                          'median_duration': median_duration,
-                                          'median_interval': median_interval,
-                                          'median_travel_distance': median_travel_distance,
-                                          'median_start': median_start,
-                                          'percent_all': percent_all,
-                                          'percent_media': percent_media,
-                                          'percent_travel': percent_travel,
-                                          'percent_hotspot': percent_hotspot,
-                                          'sample_checklist': sample_checklist,
-                                          'mean_group_size': mean_observers}, name=user))
+
+    user_df = pd.DataFrame({'n_checklists': n_checklists,
+                            'n_species': n_species,
+                            'n_observations': n_observations,
+                            'since': since,
+                            'geometry': centroid,
+                            'species_size': species_size,
+                            'species_color': species_color,
+                            'species_resident': species_resident,
+                            'species_introduced': species_introduced,
+                            'species_common': species_common,
+                            'median_distance': median_distance,
+                            'median_duration': median_duration,
+                            'median_interval': median_interval,
+                            'median_travel_distance': median_travel_distance,
+                            'median_start': median_start,
+                            'percent_all': percent_all,
+                            'percent_media': percent_media,
+                            'percent_travel': percent_travel,
+                            'percent_hotspot': percent_hotspot,
+                            'sample_checklist': sample_checklist,
+                            'mean_group_size': mean_observers}, index=[user])
 
     # return user data
-    return users_df
+    return user_df
 
 
 def main():
@@ -145,7 +167,7 @@ def main():
     client = Client(api_key, locale)
 
     # read observations database
-    observations = pd.read_csv(args.input_csv)
+    observations = pd.read_csv(args.input_csv)[:1000]
 
     # user breakpoints
     breaks = []
@@ -162,11 +184,19 @@ def main():
     # start multiprocessing pool
     pool = Pool(args.cores)
 
+    # read bird statistics dataframe
+    bird_stats = pd.read_csv('Datasets/bird_stats.csv', index_col=0)
+
     # process observations in parallel
-    out = pool.map(get_user_data, chunks)
+
+    start = time.time()
+    out = pool.map(partial(get_user_data, client=client, bird_stats=bird_stats), chunks)
     out = [ele for ele in out if type(ele) != bool]
     user_df = pd.concat(out)
-    user_df.to_file(args.output)
+    user_df.to_csv(args.output)
+    print(
+        f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
+        f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 if __name__ == "__main__":

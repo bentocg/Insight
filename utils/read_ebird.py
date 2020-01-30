@@ -1,21 +1,24 @@
 __all__ = ['load_ebird']
 
-import pandas as pd
+import time
 from argparse import ArgumentParser
+
+import pandas as pd
 
 
 def parse_args():
     parser = ArgumentParser("eBird database .txt file muncher")
     parser.add_argument('--input_txt', '-i', type=str, help='path to eBird database file')
-    parser.add_argument('--start_year', '-y', type=int, help='year to start data collection', default=2017)
+    parser.add_argument('--period', '-p', type=str, help='start year to end year separated by a dash',
+                        default='2017_2020')
     parser.add_argument('--output', '-o', type=str, help='path to output csv file', default='observation_data.csv')
     return parser.parse_args()
 
 
-def load_ebird(filename: str, start_year: int = 2017, output: str = 'obseration_data.csv', rows: int = 10e5):
+def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv', rows: int = 10e5):
     """
-    eBird database .txt file muncher. Reads observations from text file by chunks and writes combined data sorted by
-    observer ID into a .csv file
+    eBird database '.txt' file muncher. Reads observations from text file by chunks and writes data to a '.csv' file
+    sorted by observer ID and date.
     :param filename: input file
     :param start_year: starting year, filters data before starting year
     :param output: path to output .csv file
@@ -33,12 +36,13 @@ def load_ebird(filename: str, start_year: int = 2017, output: str = 'obseration_
     chunks = []
 
     # load the big file in smaller chunks
+    start = time.time()
     for df_chunk in pd.read_csv(filename,
                                 sep='\t',
                                 chunksize=rows,
                                 usecols=target_columns):
 
-        valid = [int(ele.split('-')[0]) >= start_year for ele in df_chunk['OBSERVATION DATE']]
+        valid = [int(period[0]) <= int(ele.split('-')[0]) < int(period[1]) for ele in df_chunk['OBSERVATION DATE']]
         df_chunk = df_chunk.loc[valid]
 
         # don`t append invalid rows
@@ -46,13 +50,14 @@ def load_ebird(filename: str, start_year: int = 2017, output: str = 'obseration_
             chunks.append(df_chunk)
 
     # write output to csv
-    combined = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
+    combined = pd.concat(chunks).sort_values(by=['OBSERVER ID', 'OBSERVATION DATE'])
     combined.to_csv(output)
+    print(f"Finished reading {len(combined)} lines in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 def main():
     args = parse_args()
-    load_ebird(filename=args.input_txt, start_year=args.start_year, output=args.output)
+    load_ebird(filename=args.input_txt, period=args.period.split('-'), output=args.output)
 
 
 if __name__ == "__main__":
