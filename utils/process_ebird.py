@@ -161,20 +161,18 @@ def main():
     # read arguments
     args = parse_args()
 
-    # # setup client instance
-    # api_key = '6qmfvb8pg9dk'
-    # locale = 'en_US'
-    # client = Client(api_key, locale)
-
+    # start timer
     start = time.time()
-    # read observations database
-    chunks = []
-    for df_chunk in pd.read_csv(args.input_csv,
-                                chunksize=10E5):
-        chunks.append(df_chunk)
 
-        # write output to csv
-    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID'])[:50000]
+    # read observations database
+    observations = pd.read_csv(args.input_csv, dtype={'HAS MEDIA': np.uint8,
+                                                      'ALL SPECIES REPORTED': np.uint8,
+                                                      'DURATION MINUTES': np.float32,
+                                                      'EFFORT DISTANCE KM': np.float32,
+                                                      'NUMBER OBSERVERS': np.float32})
+    print(observations.dtypes)
+    observations = observations.sort_values(by='OBSERVER ID')
+    print(f"{len(observations)} observations loaded in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
     # user breakpoints
     breaks = []
@@ -195,22 +193,14 @@ def main():
     # process observations in parallel
     pool = Pool(args.cores)
 
-    # out = []
-    #
-    # for chunk in chunks:
-    #     out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
-    # pool.close()
-    # pool.join()
-    # results = [pool.apply_async(partial(get_user_data, bird_stats=bird_stats), (chunk,)) for chunk in
-    #            chunks]
-    # out = [p.get() for p in results]
-    out = pool.map_async(partial(get_user_data, bird_stats=bird_stats), chunks)
+    # run processing pool
+    out = pool.map(partial(get_user_data, bird_stats=bird_stats), chunks)
 
-    user_df = pd.concat(out.get())
+    user_df = pd.concat(out)
     user_df.to_csv(args.output)
     print(
-         f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
-         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+        f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
+        f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 if __name__ == "__main__":
