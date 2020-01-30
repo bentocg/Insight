@@ -174,7 +174,7 @@ def main():
         chunks.append(df_chunk)
 
         # write output to csv
-    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID', 'OBSERVATION DATE'])
+    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
 
     # user breakpoints
     breaks = []
