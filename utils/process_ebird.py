@@ -127,7 +127,7 @@ def get_user_data(user_data, client, bird_stats, latest=2015):
     else:
         checklist = np.random.choice(user_data['SAMPLING EVENT IDENTIFIER'])
 
-    sample_checklist = f"https://ebird.org/checklist/{checklist}"
+    sample_checklist = "https://ebird.org/checklist/" + checklist
 
     # add user
 
@@ -197,9 +197,9 @@ def main():
     out = [ele for ele in out if type(ele) != bool]
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
-    print(
-        f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
-        f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+    # print(
+    #     f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
+    #     f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 if __name__ == "__main__":
