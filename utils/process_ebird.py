@@ -128,8 +128,6 @@ def get_user_data(user_data, bird_stats, latest=2015):
 
     sample_checklist = "https://ebird.org/checklist/" + checklist
 
-    # add user
-
     user_df = pd.DataFrame()
     user_df = user_df.append(pd.Series({'n_checklists': n_checklists,
                                         'n_species': n_species,
@@ -155,6 +153,14 @@ def get_user_data(user_data, bird_stats, latest=2015):
 
     # return user data
     return user_df
+    # out = '\t'.join([str(ele) for ele in
+    #                  [user_data['OBSERVER ID'].iloc[0], n_checklists, n_observations, n_species, since, centroid,
+    #                   species_size, species_color,
+    #                   species_resident, species_introduced, species_common, median_distance, median_duration,
+    #                   median_interval, median_travel_distance, median_start, percent_all, percent_media,
+    #                   percent_travel, percent_hotspot, sample_checklist, mean_observers]]) + '\n'
+    # return out
+    #
 
 
 def main():
@@ -170,7 +176,7 @@ def main():
                                                       'DURATION MINUTES': np.float32,
                                                       'EFFORT DISTANCE KM': np.float32,
                                                       'NUMBER OBSERVERS': np.float32})
-    print(observations.dtypes)
+
     observations = observations.sort_values(by='OBSERVER ID')
     print(f"{len(observations)} observations loaded in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
@@ -199,7 +205,7 @@ def main():
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
     print(
-        f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
+        f"Finished compiling {len(observations)} into users in  "
         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
