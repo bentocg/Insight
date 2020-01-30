@@ -131,27 +131,28 @@ def get_user_data(user_data, client, bird_stats, latest=2015):
 
     # add user
 
-    user_df = pd.DataFrame({'n_checklists': n_checklists,
-                            'n_species': n_species,
-                            'n_observations': n_observations,
-                            'since': since,
-                            'geometry': centroid,
-                            'species_size': species_size,
-                            'species_color': species_color,
-                            'species_resident': species_resident,
-                            'species_introduced': species_introduced,
-                            'species_common': species_common,
-                            'median_distance': median_distance,
-                            'median_duration': median_duration,
-                            'median_interval': median_interval,
-                            'median_travel_distance': median_travel_distance,
-                            'median_start': median_start,
-                            'percent_all': percent_all,
-                            'percent_media': percent_media,
-                            'percent_travel': percent_travel,
-                            'percent_hotspot': percent_hotspot,
-                            'sample_checklist': sample_checklist,
-                            'mean_group_size': mean_observers}, index=[user])
+    user_df = pd.DataFrame()
+    user_df = user_df.append(pd.Series({'n_checklists': n_checklists,
+                                        'n_species': n_species,
+                                        'n_observations': n_observations,
+                                        'since': since,
+                                        'geometry': centroid,
+                                        'species_size': species_size,
+                                        'species_color': species_color,
+                                        'species_resident': species_resident,
+                                        'species_introduced': species_introduced,
+                                        'species_common': species_common,
+                                        'median_distance': median_distance,
+                                        'median_duration': median_duration,
+                                        'median_interval': median_interval,
+                                        'median_travel_distance': median_travel_distance,
+                                        'median_start': median_start,
+                                        'percent_all': percent_all,
+                                        'percent_media': percent_media,
+                                        'percent_travel': percent_travel,
+                                        'percent_hotspot': percent_hotspot,
+                                        'sample_checklist': sample_checklist,
+                                        'mean_group_size': mean_observers}, name=user))
 
     # return user data
     return user_df
