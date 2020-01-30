@@ -8,7 +8,6 @@ from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
-from ebird.api import Client
 from shapely.geometry import Point
 
 
@@ -202,11 +201,12 @@ def main():
     #     out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
     # pool.close()
     # pool.join()
-    results = [pool.apply_async(partial(get_user_data, bird_stats=bird_stats), (chunk,)) for chunk in
-               chunks]
-    out = [p.get() for p in results]
+    # results = [pool.apply_async(partial(get_user_data, bird_stats=bird_stats), (chunk,)) for chunk in
+    #            chunks]
+    # out = [p.get() for p in results]
+    out = pool.map_async(partial(get_user_data, bird_stats=bird_stats), chunks)
 
-    user_df = pd.concat(out)
+    user_df = pd.concat(out.get())
     user_df.to_csv(args.output)
     print(
          f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
