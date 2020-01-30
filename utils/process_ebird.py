@@ -168,7 +168,8 @@ def main():
     client = Client(api_key, locale)
 
     # read observations database
-    observations = pd.read_csv(args.input_csv)[:1000]
+    observations = pd.read_csv(args.input_csv)
+    observations = observations.sort_values(by=['OBERVER ID', 'OBSERVATION DATE'])
 
     # user breakpoints
     breaks = []
@@ -176,7 +177,8 @@ def main():
     prev = 0
     for idx in range(len(observers) - 1):
         if observers[idx] != observers[idx + 1]:
-            breaks.append([prev, idx + 1])
+            if idx - prev > 40:
+                breaks.append([prev, idx + 1])
             prev = idx + 1
 
     # create chunks
