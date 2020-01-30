@@ -29,7 +29,7 @@ def handle_numerical(nums):
 
 
 # processing function
-def get_user_data(user_data, client, bird_stats, latest=2015):
+def get_user_data(user_data, bird_stats, latest=2015):
     """
     Helper function to process data from observations of a single user
     :param user_data:
@@ -38,11 +38,11 @@ def get_user_data(user_data, client, bird_stats, latest=2015):
     :return:
     """
     # store user name
-    try:
-        user = client.get_checklist(user_data['SAMPLING EVENT IDENTIFIER'].iloc[0])['userDisplayName']
-    except IndexError:
-        print('failed to load username')
-        return False
+    # try:
+    #     user = client.get_checklist(user_data['SAMPLING EVENT IDENTIFIER'].iloc[0])['userDisplayName']
+    # except IndexError:
+    #     print('failed to load username')
+    #     return False
 
     # event data
     event_data = pd.DataFrame()
@@ -152,7 +152,7 @@ def get_user_data(user_data, client, bird_stats, latest=2015):
                                         'percent_travel': percent_travel,
                                         'percent_hotspot': percent_hotspot,
                                         'sample_checklist': sample_checklist,
-                                        'mean_group_size': mean_observers}, name=user))
+                                        'mean_group_size': mean_observers}, name=user_data['OBSERVER ID'].iloc[0]))
 
     # return user data
     return user_df
@@ -162,11 +162,12 @@ def main():
     # read arguments
     args = parse_args()
 
-    # setup client instance
-    api_key = '6qmfvb8pg9dk'
-    locale = 'en_US'
-    client = Client(api_key, locale)
+    # # setup client instance
+    # api_key = '6qmfvb8pg9dk'
+    # locale = 'en_US'
+    # client = Client(api_key, locale)
 
+    start = time.time()
     # read observations database
     chunks = []
     for df_chunk in pd.read_csv(args.input_csv,
@@ -174,7 +175,7 @@ def main():
         chunks.append(df_chunk)
 
         # write output to csv
-    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
+    observations = pd.concat(chunks).sort_values(by=['OBSERVER ID'])[:50000]
 
     # user breakpoints
     breaks = []
@@ -187,7 +188,7 @@ def main():
             prev = idx + 1
 
     # create chunks
-    chunks = (observations.iloc[range(chunk_idx[0], chunk_idx[1])] for chunk_idx in breaks)
+    chunks = (observations.iloc[range(chunk_idx[0], chunk_idx[1])] for chunk_idx in breaks[:-1])
 
     # read bird statistics dataframe
     bird_stats = pd.read_csv('Datasets/bird_stats.csv', index_col=0)
@@ -201,13 +202,10 @@ def main():
     #     out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
     # pool.close()
     # pool.join()
-    results = [pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)) for chunk in
+    results = [pool.apply_async(partial(get_user_data, bird_stats=bird_stats), (chunk,)) for chunk in
                chunks]
     out = [p.get() for p in results]
 
-    start = time.time()
-
-    out = [ele for ele in out if type(ele) != bool]
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
     print(

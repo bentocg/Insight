@@ -50,7 +50,7 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
             chunks.append(df_chunk)
 
     # write output to csv
-    combined = pd.concat(chunks).sort_values(by=['OBSERVER ID', 'OBSERVATION DATE'])
+    combined = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
     combined.to_csv(output)
     print(f"Finished reading {len(combined)} lines in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
