@@ -186,7 +186,6 @@ def main():
                 breaks.append([prev, idx + 1])
             prev = idx + 1
 
-    print(len(breaks))
     # create chunks
     chunks = (observations.iloc[range(chunk_idx[0], chunk_idx[1])] for chunk_idx in breaks)
 
@@ -196,22 +195,24 @@ def main():
     # process observations in parallel
     pool = Pool(args.cores)
 
-    out = []
-
-    for chunk in chunks:
-        out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
-    pool.close()
-    pool.join()
-
+    # out = []
+    #
+    # for chunk in chunks:
+    #     out.append(pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)).get())
+    # pool.close()
+    # pool.join()
+    results = [pool.apply_async(partial(get_user_data, client=client, bird_stats=bird_stats), (chunk,)) for chunk in
+               chunks]
+    out = [p.get() for p in results]
 
     start = time.time()
 
     out = [ele for ele in out if type(ele) != bool]
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
-    # print(
-    #     f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
-    #     f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+    print(
+         f"Finished compiling {len(observations)} observations into {len(user_df)} users in  "
+         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 if __name__ == "__main__":
