@@ -28,7 +28,7 @@ def handle_numerical(nums):
 
 
 # processing function
-def get_user_data(user_data, bird_stats, latest=2015):
+def get_user_data(user_data, bird_stats, latest=2018):
     """
     Helper function to process data from observations of a single user
     :param user_data:
@@ -57,7 +57,7 @@ def get_user_data(user_data, bird_stats, latest=2015):
     # time variables
 
     # find median interval between observations
-    dates = [datetime.date(*[int(ele) for ele in date.split('-')]) for date in event_data['OBSERVATION DATE']]
+    dates = sorted([datetime.date(*[int(ele) for ele in date.split('-')]) for date in event_data['OBSERVATION DATE']])
 
     # get year of first checklist
     since = int(dates[0].year)
@@ -201,6 +201,7 @@ def main():
 
     # run processing pool
     out = pool.map(partial(get_user_data, bird_stats=bird_stats), chunks)
+    out = [ele for ele in out if type(ele) != bool]
 
     user_df = pd.concat(out)
     user_df.to_csv(args.output)
