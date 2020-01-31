@@ -36,12 +36,6 @@ def get_user_data(user_data, bird_stats, latest=2018):
     :param latest:
     :return:
     """
-    # store user name
-    # try:
-    #     user = client.get_checklist(user_data['SAMPLING EVENT IDENTIFIER'].iloc[0])['userDisplayName']
-    # except IndexError:
-    #     print('failed to load username')
-    #     return False
 
     # event data
     event_data = pd.DataFrame()
@@ -54,20 +48,18 @@ def get_user_data(user_data, bird_stats, latest=2018):
     n_checklists = len(event_data)
     n_observations = len(user_data)
 
-    # time variables
-
     # find median interval between observations
     dates = sorted([datetime.date(*[int(ele) for ele in date.split('-')]) for date in event_data['OBSERVATION DATE']])
 
     # get year of first checklist
-    since = int(dates[0].year)
+    since = 2019 - int(dates[0].year)
 
     # check if user has been active for the last year
     if int(dates[-1].year) < latest:
         return False
 
     if n_checklists > 1:
-        dates = sorted(dates)
+        dates = sorted(set(dates))
         intervals = [(dates[idx + 1] - dates[idx]).total_seconds() for idx in range(len(dates) - 1)]
         median_interval = np.median(intervals)
     else:
@@ -89,6 +81,20 @@ def get_user_data(user_data, bird_stats, latest=2018):
     observers = handle_numerical([ele for ele in event_data['NUMBER OBSERVERS']])
     mean_observers = np.mean(observers)
 
+    # get specific types of protocols
+
+    # species protocols
+    protocols = {'Nocturnal Flight Call Count', 'Oiled Birds', 'CWC Point Count', 'TNC California Waterbird Count',
+                 'Rusty Blackbird Spring Migration Blitz', 'California Brown Pelican Survey', 'PROALAS',
+                 'Audubon Coastal Bird Survey', 'International Shorebird Survey', 'Tricolored Blackbird Winter Survey',
+                 'eBird Pelagic Protocol', 'Great Texas Birding Classic', 'Greater Gulf Refuge Waterbird Count'}
+
+    # percent special protocols
+    percent_protocol = sum(event_data['PROTOCOL TYPE'].isin(protocols)) / n_checklists
+
+    # has this person done banding
+    banding = int(sum(event_data['PROTOCOL TYPE'] == 'Banding') > 0)
+
     # location
     percent_hotspot = sum(event_data['LOCALITY TYPE'] == 'H') / n_checklists
     locations = [Point([float(ele[0]), float(ele[1])]) for ele in zip(event_data['LATITUDE'], event_data['LONGITUDE'])]
@@ -96,6 +102,7 @@ def get_user_data(user_data, bird_stats, latest=2018):
     centroid = locations[np.argmin(distances)]
 
     # trip type
+    percent_incidental = sum(event_data['PROTOCOL TYPE'] == 'Incidental') / n_checklists
     percent_travel = sum(event_data['PROTOCOL TYPE'] == 'Traveling') / n_checklists
     if percent_travel > 0:
         travels = [locations[idx] for idx, ele in enumerate(event_data['PROTOCOL TYPE']) if ele == 'Traveling']
@@ -119,6 +126,7 @@ def get_user_data(user_data, bird_stats, latest=2018):
     species_resident = np.mean([bird_stats.loc[spc, 'resident'] for spc in valid_obs])
     species_introduced = np.mean([bird_stats.loc[spc, 'introduced'] for spc in valid_obs])
     species_common = np.mean([bird_stats.loc[spc, 'commonness'] for spc in valid_obs])
+    species_popular = np.mean([bird_stats.loc[spc, 'popularity'] for spc in valid_obs])
 
     # get a sample checklist
     if percent_media > 0:
@@ -133,11 +141,13 @@ def get_user_data(user_data, bird_stats, latest=2018):
                                         'n_species': n_species,
                                         'n_observations': n_observations,
                                         'since': since,
+                                        'banding': banding,
                                         'geometry': centroid,
                                         'species_size': species_size,
                                         'species_color': species_color,
                                         'species_resident': species_resident,
                                         'species_introduced': species_introduced,
+                                        'species_popular': species_popular,
                                         'species_common': species_common,
                                         'median_distance': median_distance,
                                         'median_duration': median_duration,
@@ -146,6 +156,8 @@ def get_user_data(user_data, bird_stats, latest=2018):
                                         'median_start': median_start,
                                         'percent_all': percent_all,
                                         'percent_media': percent_media,
+                                        'percent_protocol': percent_protocol,
+                                        'percent_incedental': percent_incidental,
                                         'percent_travel': percent_travel,
                                         'percent_hotspot': percent_hotspot,
                                         'sample_checklist': sample_checklist,
@@ -153,14 +165,6 @@ def get_user_data(user_data, bird_stats, latest=2018):
 
     # return user data
     return user_df
-    # out = '\t'.join([str(ele) for ele in
-    #                  [user_data['OBSERVER ID'].iloc[0], n_checklists, n_observations, n_species, since, centroid,
-    #                   species_size, species_color,
-    #                   species_resident, species_introduced, species_common, median_distance, median_duration,
-    #                   median_interval, median_travel_distance, median_start, percent_all, percent_media,
-    #                   percent_travel, percent_hotspot, sample_checklist, mean_observers]]) + '\n'
-    # return out
-    #
 
 
 def main():

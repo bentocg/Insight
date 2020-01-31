@@ -4,13 +4,14 @@ import time
 from argparse import ArgumentParser
 
 import pandas as pd
+import numpy as np
 
 
 def parse_args():
     parser = ArgumentParser("eBird database .txt file muncher")
     parser.add_argument('--input_txt', '-i', type=str, help='path to eBird database file')
     parser.add_argument('--period', '-p', type=str, help='start year to end year separated by a dash',
-                        default='2017_2020')
+                        default='2017-2020')
     parser.add_argument('--output', '-o', type=str, help='path to output csv file', default='observation_data.csv')
     return parser.parse_args()
 
@@ -40,7 +41,12 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
     for df_chunk in pd.read_csv(filename,
                                 sep='\t',
                                 chunksize=rows,
-                                usecols=target_columns):
+                                usecols=target_columns,
+                                dtype={'HAS MEDIA': np.uint8,
+                                       'ALL SPECIES REPORTED': np.uint8,
+                                       'DURATION MINUTES': np.float32,
+                                       'EFFORT DISTANCE KM': np.float32,
+                                       'NUMBER OBSERVERS': np.float32}):
 
         valid = [int(period[0]) <= int(ele.split('-')[0]) < int(period[1]) for ele in df_chunk['OBSERVATION DATE']]
         df_chunk = df_chunk.loc[valid]
@@ -52,7 +58,8 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
     # write output to csv
     combined = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
     combined.to_csv(output)
-    print(f"Finished reading {len(combined)} lines in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+    print(
+        f"Finished reading {len(combined)} lines in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 def main():
