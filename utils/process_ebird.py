@@ -204,10 +204,12 @@ def main():
     pool = Pool(args.cores)
 
     # run processing pool
-    out = pool.map(partial(get_user_data, bird_stats=bird_stats), chunks)
-    out = [ele for ele in out if type(ele) != bool]
+    out = pool.imap_unordered(partial(get_user_data, bird_stats=bird_stats), chunks)
+    pool.close()
+    pool.join()
 
-    user_df = pd.concat(out)
+    # save output
+    user_df = pd.concat([ele for ele in out if type(ele) != bool])
     user_df.to_csv(args.output)
     print(
         f"Finished compiling {len(observations)} into users in  "
