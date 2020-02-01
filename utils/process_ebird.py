@@ -28,7 +28,7 @@ def handle_numerical(nums):
 
 
 # processing function
-def get_user_data(user_data, bird_stats, latest=2018):
+def get_user_data(user_data, bird_stats, latest=2019):
     """
     Helper function to process data from observations of a single user
     :param user_data:
