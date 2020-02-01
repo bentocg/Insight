@@ -37,7 +37,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
     :return:
     """
 
-    # event data
+    # get checklist events from observations
     event_data = pd.DataFrame()
 
     for event in set(user_data['SAMPLING EVENT IDENTIFIER']):
@@ -120,7 +120,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
     n_species = len(set(user_data['COMMON NAME']))
 
     # species data
-    valid_obs = [spc for spc in user_data['COMMON NAME'] if spc in bird_stats.index]
+    valid_obs = list(user_data[user_data['COMMON NAME'].isin(bird_stats.index)]['COMMON NAME'])
     species_size = np.mean([bird_stats.loc[spc, 'log_10_mass'] for spc in valid_obs])
     species_color = np.mean([bird_stats.loc[spc, 'max_color_contrast'] for spc in valid_obs])
     species_resident = np.mean([bird_stats.loc[spc, 'resident'] for spc in valid_obs])

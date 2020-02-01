@@ -30,8 +30,8 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
     target_columns = ['SAMPLING EVENT IDENTIFIER', 'COMMON NAME', 'OBSERVATION COUNT',
                       'LOCALITY TYPE', 'LATITUDE', 'LONGITUDE', 'OBSERVATION DATE',
                       'TIME OBSERVATIONS STARTED', 'PROTOCOL TYPE', 'DURATION MINUTES',
-                      'EFFORT DISTANCE KM', 'EFFORT AREA HA', 'NUMBER OBSERVERS',
-                      'ALL SPECIES REPORTED', 'HAS MEDIA', 'OBSERVER ID']
+                      'EFFORT DISTANCE KM', 'NUMBER OBSERVERS', 'ALL SPECIES REPORTED',
+                      'HAS MEDIA', 'OBSERVER ID', 'GROUP IDENTIFIER']
 
     # accumulate chunks
     chunks = []
