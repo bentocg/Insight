@@ -32,7 +32,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
     """
     Helper function to process data from observations of a single user
     :param user_data:
-    :param client:
+    :param bird_stats:
     :param latest:
     :return:
     """
@@ -212,7 +212,7 @@ def main():
     user_df = pd.concat([ele for ele in out if type(ele) != bool])
     user_df.to_csv(args.output)
     print(
-        f"Finished compiling {len(observations)} into users in  "
+        f"Finished compiling {len(observations)} into {len(user_df)} users in  "
         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
