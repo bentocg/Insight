@@ -113,7 +113,10 @@ def get_user_data(user_data, bird_stats, latest=2019):
     # median starting time
     times = [int(tm[:2]) * 3600 + int(tm[3:5]) * 60 + int(tm[6:]) if type(tm) == str else float('NaN') for tm in
              event_data['TIME OBSERVATIONS STARTED']]
-    median_start = np.nanmedian(times)
+    times_morning = [ele for ele in times if ele < 43200]
+
+    median_start = np.nanmedian(times_morning)
+    percent_afternoon = len(times_morning) / len(times)
 
     # observation data
     percent_media = np.mean([int(ele) for ele in user_data['HAS MEDIA']])
@@ -154,6 +157,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
                                         'median_interval': median_interval,
                                         'median_travel_distance': median_travel_distance,
                                         'median_start': median_start,
+                                        'percent_afternoon': percent_afternoon,
                                         'percent_all': percent_all,
                                         'percent_media': percent_media,
                                         'percent_protocol': percent_protocol,
