@@ -40,7 +40,7 @@ def main():
     user_data = pd.read_csv(args.input_users, usecols=['Unnamed: 0', 'n_checklists'], index_col=0)
     users = {idx: row['n_checklists'] for idx, row in user_data.iterrows()}
     print(
-        f"Finished reading {len(obs_data)} observations in  "
+        f"Read {len(obs_data)} observations in  "
         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
     start = time.time()
 
@@ -54,8 +54,9 @@ def main():
     group_ids = list(obs_data['GROUP IDENTIFIER'])
     breaks = [0] + [idx + 1 for idx in range(len(group_ids) - 1) if group_ids[idx] != group_ids[idx + 1]]
     print(
-        f"Finished filtering {len(obs_data)} observations into {len(breaks)} groups in "
+        f"Filtered {len(obs_data)} observations into {len(breaks)} groups in "
         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+    start = time.time()
 
     # process groups
     chunks = (obs_data.iloc[range(breaks[idx], breaks[idx + 1])] for idx in range(len(breaks) - 1))
@@ -86,6 +87,9 @@ def main():
             pd.Series({'user_1': user1, 'user_2': user2, 'count': matches[match],
                        'count_percent': matches[match] / avg_n_checklist}, name=match))
     matches_df.to_csv(args.output)
+    print(
+        f"Wrote {len(matches_df)} valid pairs to {args.output} in"
+        f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 if __name__ == "__main__":
