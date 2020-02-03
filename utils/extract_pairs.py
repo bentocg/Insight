@@ -46,7 +46,7 @@ def main():
 
     # filter observation data by user and group size
     obs_data = obs_data.loc[obs_data['OBSERVER ID'].isin(users)]
-    obs_data = obs_data.loc[obs_data['NUMBER OBSERVERS'] == 2]
+    #obs_data = obs_data.loc[obs_data['NUMBER OBSERVERS'] == 2]
     obs_data = obs_data.loc[[type(ele) != float for ele in obs_data['GROUP IDENTIFIER']]]
 
     # sort by group and find breakpoints between groups
@@ -88,7 +88,7 @@ def main():
                        'count_percent': matches[match] / avg_n_checklist}, name=match))
     matches_df.to_csv(args.output)
     print(
-        f"Wrote {len(matches_df)} valid pairs to {args.output} in"
+        f"Wrote {len(matches_df)} valid pairs to {args.output} in "
         f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
