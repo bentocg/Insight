@@ -3,8 +3,8 @@ __all__ = ['load_ebird']
 import time
 from argparse import ArgumentParser
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def parse_args():
@@ -16,12 +16,13 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv', rows: int = 10e5):
+def load_ebird(filename: str, period: list, cores: int = 1, output: str = 'observation_data.csv', rows: int = 10e5):
     """
     eBird database '.txt' file muncher. Reads observations from text file by chunks and writes data to a '.csv' file
     sorted by observer ID and date.
     :param filename: input file
-    :param start_year: starting year, filters data before starting year
+    :param period: starting year, filters data before starting year
+    :param cores
     :param output: path to output .csv file
     :param rows: number of rows in a chunk
     :return: None
@@ -33,11 +34,10 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
                       'EFFORT DISTANCE KM', 'NUMBER OBSERVERS', 'ALL SPECIES REPORTED',
                       'HAS MEDIA', 'OBSERVER ID', 'GROUP IDENTIFIER']
 
-    # accumulate chunks
-    chunks = []
-
     # load the big file in smaller chunks
     start = time.time()
+    first = True
+
     for df_chunk in pd.read_csv(filename,
                                 sep='\t',
                                 chunksize=rows,
@@ -53,13 +53,15 @@ def load_ebird(filename: str, period: list, output: str = 'obseration_data.csv',
 
         # don`t append invalid rows
         if len(df_chunk) > 0:
-            chunks.append(df_chunk)
+            if first:
+                df_chunk.to_csv(output)
+                first = False
 
-    # write output to csv
-    combined = pd.concat(chunks).sort_values(by=['OBSERVER ID'])
-    combined.to_csv(output)
+            else:
+                df_chunk.to_csv(output, mode='a', header=False)
+
     print(
-        f"Finished reading {len(combined)} lines in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+        f"Finished reading raw data and writing to .csv in {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
 
 
 def main():

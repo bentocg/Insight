@@ -157,7 +157,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
                                         'percent_all': percent_all,
                                         'percent_media': percent_media,
                                         'percent_protocol': percent_protocol,
-                                        'percent_incedental': percent_incidental,
+                                        'percent_incidental': percent_incidental,
                                         'percent_travel': percent_travel,
                                         'percent_hotspot': percent_hotspot,
                                         'sample_checklist': sample_checklist,
