@@ -13,12 +13,13 @@ blinker=1.4=pypi_0
 bokeh=1.4.0=py37_0
 boto3=1.11.9=pypi_0
 botocore=1.14.9=pypi_0
-ca-certificates=2019.11.27=0
+ca-certificates=2020.1.1=0
 certifi=2019.11.28=py37_0
 chardet=3.0.4=pypi_0
 click=7.0=pypi_0
 click-plugins=1.1.1=pypi_0
 cligj=0.5.0=pypi_0
+cudatoolkit=10.1.243=h6bb024c_0
 cython=0.29.14=pypi_0
 decorator=4.4.1=py_0
 defusedxml=0.6.0=py_0
@@ -69,6 +70,7 @@ nb_conda_kernels=2.2.2=py37_0
 nbconvert=5.6.1=py37_0
 nbformat=4.4.0=py37_0
 ncurses=6.1=he6710b0_1
+ninja=1.9.0=py37hfd86e86_0
 notebook=6.0.2=py37_0
 numpy=1.18.1=pypi_0
 numpy-base=1.18.1=py37hde5b4d6_1
@@ -95,6 +97,7 @@ pyproj=2.4.2.post1=pypi_0
 pyrsistent=0.15.6=py37h7b6447c_0
 python=3.7.6=h0371630_2
 python-dateutil=2.8.0=pypi_0
+pytorch=1.4.0=py3.7_cuda10.1.243_cudnn7.6.3_0
 pytz=2019.3=pypi_0
 pyyaml=5.2=py37h7b6447c_0
 pyzmq=18.1.0=py37he6710b0_0
@@ -114,6 +117,7 @@ testpath=0.4.4=py_0
 tk=8.6.8=hbc83047_0
 toml=0.10.0=pypi_0
 toolz=0.10.0=pypi_0
+torchvision=0.5.0=py37_cu101
 tornado=5.1.1=pypi_0
 traitlets=4.3.3=py37_0
 tsnecuda=0.1.1=pypi_0
