@@ -31,7 +31,6 @@ def train_model(model, optim, train_dl, loss_fn, use_gpu=False):
 def val_loss(model, valid_dl, loss_fn, use_gpu=False):
     model.eval()
     total = 0
-    correct = 0
     sum_loss = 0
     false_positives = 0
     true_positives = 0
@@ -57,6 +56,7 @@ def val_loss(model, valid_dl, loss_fn, use_gpu=False):
 
 def train_loop(model, epochs, loss_fn, train_dl, valid_dl, use_gpu=False, lr=0.01):
     max_f1 = 0
+    max_params = {}
     optim = get_optimizer(model, lr=lr)
     for i in range(epochs):
         loss = train_model(model, optim, train_dl, loss_fn, use_gpu)
@@ -66,4 +66,5 @@ def train_loop(model, epochs, loss_fn, train_dl, valid_dl, use_gpu=False, lr=0.0
             f1 = precision * recall
             if f1 > max_f1:
                 max_f1 = f1
-    return max_f1
+                max_params = model.state_dict()
+    return max_f1, max_params

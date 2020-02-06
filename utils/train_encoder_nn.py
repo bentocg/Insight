@@ -1,4 +1,4 @@
-import operator
+import time
 
 import numpy as np
 import pandas as pd
@@ -39,6 +39,7 @@ with open('users_train.txt', 'w') as src:
 unused = ['sample_checklist', 'geometry']
 users_train = users_train.drop(unused, axis=1)
 users_train = users_train.fillna(0)
+n_features = users_train.shape[1]
 
 # get match data and split between train and validation
 x1 = users_train.loc[good_matches['user_1']].append(users_train.loc[bad_matches['user_1']])
@@ -58,38 +59,60 @@ sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
 train_ds = MatchDataset(x1.iloc[train_idcs], x2.iloc[train_idcs], y_vec[train_idcs])
 valid_ds = MatchDataset(x1.iloc[valid_idcs], x2.iloc[valid_idcs], y_vec[valid_idcs])
 
+# create training and validation dataloaders
 batch_size = 1024
 train_dl = DataLoader(train_ds, batch_size=batch_size, sampler=sampler)
 valid_dl = DataLoader(valid_ds, batch_size=batch_size, shuffle=False)
 
-epochs = 500
-hidden_size_pool = [30, 50, 70]
-hidden_layers_pool = [1, 2, 3, 4]
+# hyperparameter search
+
+# pool of hyperparameter values
+n_combs = 250
+epochs = 100
+hidden_size_pool = [100, 200, 500]
+hidden_layers_pool = [1, 2]
 dropout_pool = [0., 0.25, 0.50]
 learning_rate_pool = [1E-3, 5E-4, 1E-4, 5E-5]
-out_size_pool = [10, 25, 50]
+out_size_pool = [100, 200, 500]
+loss_pool = ["L1", "SmoothL1"]
+loss_functions = {"SmoothL1": nn.SmoothL1Loss(),
+                  "L1": nn.L1Loss()}
 
+# store combinations
 combinations = {}
-comb = {}
 
-loss_fn = nn.L1Loss()
+# get n combinations at random from pool
+start = time.time()
+for i in range(n_combs):
+    hidden_size = np.random.choice(hidden_size_pool)
+    hidden_layers = int(np.random.choice(hidden_layers_pool))
+    dropout = np.random.choice(dropout_pool)
+    learning_rate = np.random.choice(learning_rate_pool)
+    out_size = np.random.choice(out_size_pool)
+    loss = np.random.choice(loss_pool)
+    loss_fn = loss_functions[loss]
 
-model = MatchNN(24, [200] * 2, 200, [0.5] * 2)
-train_loop(model, epochs, loss_fn, train_dl, valid_dl, lr=0.0001)
+    # create an identifier for combination
+    key = f"{hidden_size}_{out_size}_{hidden_layers}_{dropout}_{learning_rate}_{loss}"
 
-# for i in range(100):
-#     hidden_size = np.random.choice(hidden_size_pool)
-#     hidden_layers = int(np.random.choice(hidden_layers_pool))
-#     dropout = np.random.choice(dropout_pool)
-#     learning_rate = np.random.choice(learning_rate_pool)
-#     out_size = np.random.choice(out_size_pool)
-#     key = f"{hidden_size}_{out_size}_{hidden_layers}_{dropout}_{learning_rate}"
-#
-#     model = MatchNN(23, [hidden_size] * hidden_layers, out_size, [dropout] * hidden_layers)
-#     if use_gpu:
-#         model = nn.DataParallel(model.cuda())
-#
-#     combinations[key] = train_loop(model, epochs, loss_fn, train_dl, valid_dl, use_gpu=use_gpu, lr=learning_rate)
-#
-# comb = max(combinations.iteritems(), key=operator.itemgetter(1))[0]
-# print('max f1 :', comb, combinations[comb])
+    # instantiate model using combination of parameters
+    model = MatchNN(n_features, [hidden_size] * hidden_layers, out_size, [dropout] * hidden_layers)
+    if use_gpu:
+        model = nn.DataParallel(model.cuda())
+
+    # get combination, f1 score and state dict from training
+    combinations[key] = train_loop(model, epochs, loss_fn, train_dl, valid_dl, use_gpu=use_gpu, lr=learning_rate)
+
+# get the combination with the highest f1 score
+max_val = 0
+max_key = ''
+max_params = {}
+for key, val in combinations.items():
+    if val[0] > max_val:
+        max_val = val[0]
+        max_params = val[1]
+        max_key = key
+
+print(f"Evaluated {n_combs} hyperparameter combinations in "
+      f"{time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+print(f"\nBest combination {max_key}: best F1 score: {max_val}")
