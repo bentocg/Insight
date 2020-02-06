@@ -20,7 +20,6 @@ class MinMaxScaler():
         self.max = [max(reference_db.iloc[:, idx]) for idx in range(reference_db.shape[1])]
 
     def rescale(self, input_vec):
-        assert len(input_vec) == len(self.min)
         scaled_vec = []
         for idx, ele in enumerate(input_vec):
             ele_std = (ele - self.min[idx]) / (self.max[idx] - self.min[idx])
@@ -37,4 +36,4 @@ class UserEncoder():
     def encode_user(self, user):
         user = self.preprocessing.rescale(user)
         encoding = self.encoder.forward_arm(user)
-        return encoding
+        return encoding.detach().numpy().reshape([1, -1])
