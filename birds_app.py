@@ -14,8 +14,7 @@ import torch
 ' *bringing birders together*'
 
 st.sidebar.text('User inputs:')
-lat = st.sidebar.number_input(label='latitude', value=40.7128)
-lon = st.sidebar.number_input(label="longitude", value=-74.0060)
+
 
 st.sidebar.text('Filters:')
 max_distance = st.sidebar.number_input(label='maximun distance (mi)', min_value=1, max_value=10000, value=5)
@@ -93,16 +92,32 @@ def find_match(user, encodings):
 # load data
 users, preprocessing = load_data()
 
+
 # get encodings and encoder
 encodings = load_encodings(users, preprocessing)
 
-# add user location
-user_loc = Point(lon, lat)
 
 # filter by period
 older = users.since >= (2019 - active_since)
 filtered_users = users.loc[older]
 filtered_enc = encodings[[older]]
+
+# get user
+observer_id = st.sidebar.selectbox("Observer ID", list(range(len(filtered_users))), 0)
+print(observer_id)
+user = users.iloc[observer_id]
+
+# type of location
+choice = st.radio("Choose location", ['User location', 'Other location'], 0)
+if choice == "Other location":
+    lat = st.sidebar.number_input(label='latitude', value=40.7128)
+    lon = st.sidebar.number_input(label="longitude", value=-74.0060)
+else:
+    lat = user['latitude']
+    lon = user['longitude']
+
+# user loc
+user_loc = Point(lon, lat)
 
 # filter results by distance
 user_buffer = user_loc.buffer(max_distance / 69)
@@ -115,11 +130,12 @@ model = MatchNN()
 model.load_state_dict(torch.load('Saved_models/MatchNN_200_200_2_0.pth'))
 model.eval()
 encoder = UserEncoder(preprocessing, model)
-user = users.iloc[1500]
+
 user = user.drop(['sample_che', 'geometry', 'latitude', 'longitude'])
 user = user.fillna(0)
 user = user.astype(np.float32).values
 encoded_user = encoder.encode_user(user.reshape([1, -1]))
 best_idx = find_match(encoded_user, filtered_enc)
 
+st.text(' ')
 st.map(filtered_users)
