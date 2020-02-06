@@ -36,7 +36,7 @@ def main():
 
     # read observation data and get list of target users and # checklists
     start = time.time()
-    obs_data = pd.read_csv(args.input_obs, usecols=['OBSERVER ID', 'GROUP IDENTIFIER', 'NUMBER OBSERVERS'])
+    obs_data = pd.read_csv(args.input_obs, usecols=['OBSERVER ID', 'GROUP IDENTIFIER'])
     user_data = pd.read_csv(args.input_users, usecols=['Unnamed: 0', 'n_checklists'], index_col=0)
     users = {idx: row['n_checklists'] for idx, row in user_data.iterrows()}
     print(
@@ -46,7 +46,6 @@ def main():
 
     # filter observation data by user and group size
     obs_data = obs_data.loc[obs_data['OBSERVER ID'].isin(users)]
-    #obs_data = obs_data.loc[obs_data['NUMBER OBSERVERS'] == 2]
     obs_data = obs_data.loc[[type(ele) != float for ele in obs_data['GROUP IDENTIFIER']]]
 
     # sort by group and find breakpoints between groups

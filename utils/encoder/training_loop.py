@@ -51,7 +51,6 @@ def val_loss(model, valid_dl, loss_fn, use_gpu=False):
 
     precision = true_positives / max(1, (true_positives + false_positives))
     recall = true_positives / max(1, (true_positives + false_negatives))
-    print(precision, recall)
     print("valid loss %.3f, precision %.3f, recall %.3f" % (sum_loss / total, precision, recall))
     return sum_loss / total, precision, recall
 

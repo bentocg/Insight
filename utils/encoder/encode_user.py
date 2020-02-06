@@ -6,7 +6,7 @@ import torch
 from utils.neural_net.match_nn import MatchNN
 
 
-def encode_user(user, min, max):
+def encode_user(user):
     assert len(user) == 23, 'missing parameters, could not generate encoding!'
     # load neural network
     model = MatchNN()
