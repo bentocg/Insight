@@ -60,7 +60,7 @@ def get_user_data(user_data, bird_stats, latest=2019):
 
     if n_checklists > 1:
         dates = sorted(set(dates))
-        intervals = [(dates[idx + 1] - dates[idx]).total_seconds() for idx in range(len(dates) - 1)]
+        intervals = [(dates[idx + 1] - dates[idx]).days for idx in range(len(dates) - 1)]
         median_interval = np.median(intervals)
     else:
         median_interval = 0

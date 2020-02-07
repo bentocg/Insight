@@ -11,8 +11,10 @@ import torch.nn as nn
 import torch
 
 '# Birds of a Feather'
-' *bringing birders together*'
+'$$\hspace{0.5cm}$$ *Bringing birders together*'
 
+
+st.subheader('Preferences:')
 st.sidebar.text('User inputs:')
 
 
@@ -103,13 +105,14 @@ filtered_users = users.loc[older]
 filtered_enc = encodings[[older]]
 
 # get user
-observer_id = st.sidebar.selectbox("Observer ID", list(range(len(filtered_users))), 0)
-print(observer_id)
+user_exists = st.radio("Existing eBird user? (with a minimum of 3 checklists)", ['Yes', 'No'], 0)
+if user_exists:
+    observer_id = st.sidebar.selectbox("Observer ID", list(range(len(filtered_users))), 0)
 user = users.iloc[observer_id]
 
 # type of location
-choice = st.radio("Choose location", ['User location', 'Other location'], 0)
-if choice == "Other location":
+loc_type = st.radio("Choose location", ['User location', 'Other location'], 0)
+if loc_type == "Other location":
     lat = st.sidebar.number_input(label='latitude', value=40.7128)
     lon = st.sidebar.number_input(label="longitude", value=-74.0060)
 else:
@@ -122,15 +125,16 @@ user_loc = Point(lon, lat)
 # filter results by distance
 user_buffer = user_loc.buffer(max_distance / 69)
 within = filtered_users.within(user_buffer)
-filtered_users = filtered_users.loc[within]
-filtered_enc = filtered_enc[[within]]
+filtered_users = filtered_users.loc[tuple(within)]
+filtered_enc = filtered_enc[tuple([within])]
 
-# get best match
+# start encoder
 model = MatchNN()
 model.load_state_dict(torch.load('Saved_models/MatchNN_200_200_2_0.pth'))
 model.eval()
 encoder = UserEncoder(preprocessing, model)
 
+# get match for user
 user = user.drop(['sample_che', 'geometry', 'latitude', 'longitude'])
 user = user.fillna(0)
 user = user.astype(np.float32).values

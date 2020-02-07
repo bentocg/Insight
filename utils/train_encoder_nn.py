@@ -67,8 +67,8 @@ valid_dl = DataLoader(valid_ds, batch_size=batch_size, shuffle=False)
 # hyperparameter search
 
 # pool of hyperparameter values
-n_combs = 250
-epochs = 100
+n_combs = 10
+epochs = 500
 hidden_size_pool = [100, 200, 500]
 hidden_layers_pool = [1, 2]
 dropout_pool = [0., 0.25, 0.50]
@@ -94,6 +94,7 @@ for i in range(n_combs):
 
     # create an identifier for combination
     key = f"{hidden_size}_{out_size}_{hidden_layers}_{dropout}_{learning_rate}_{loss}"
+    key = "200_200_1_0.0_0.0005_SmoothL1"
 
     # instantiate model using combination of parameters
     model = MatchNN(n_features, [hidden_size] * hidden_layers, out_size, [dropout] * hidden_layers)
