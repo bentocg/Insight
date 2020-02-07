@@ -11,6 +11,7 @@ from utils.encoder.match_nn import MatchNN
 from utils.encoder.training_loop import train_loop
 
 # set seed and deterministic for reproducibility
+np.random.seed(42)
 torch.manual_seed(0)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -31,7 +32,7 @@ train_ids = set(list(good_matches['user_1']) + list(good_matches['user_2']) + li
     bad_matches['user_2']))
 
 # write training users
-with open('users_train.txt', 'w') as src:
+with open('../Datasets/users_train.txt', 'w') as src:
     for checklist in users_train.loc[train_ids]['sample_checklist']:
         src.write(checklist + ' ')
 
@@ -47,6 +48,11 @@ x2 = users_train.loc[good_matches['user_2']].append(users_train.loc[bad_matches[
 y_vec = np.array([1] * len(good_matches) + [0] * len(bad_matches))
 valid_idcs = np.random.choice(len(y_vec), int(len(y_vec) * 0.1), replace=False)
 train_idcs = [ele for ele in range(len(y_vec)) if ele not in valid_idcs]
+
+# write validation users
+with open('../Datasets/users_validation.txt', 'w') as src:
+    for idx in valid_idcs:
+        src.write(f"{idx}_{y_vec[idx]} ")
 
 # get weights for getting training samples
 y_train = y_vec[train_idcs]
@@ -67,11 +73,11 @@ valid_dl = DataLoader(valid_ds, batch_size=batch_size, shuffle=False)
 # hyperparameter search
 
 # pool of hyperparameter values
-n_combs = 10
-epochs = 500
+n_combs = 150
+epochs = 100
 hidden_size_pool = [100, 200, 500]
-hidden_layers_pool = [1, 2]
-dropout_pool = [0., 0.25, 0.50]
+hidden_layers_pool = [1, 2, 3]
+dropout_pool = [0.]
 learning_rate_pool = [1E-3, 5E-4, 1E-4, 5E-5]
 out_size_pool = [100, 200, 500]
 loss_pool = ["L1", "SmoothL1"]
@@ -94,7 +100,6 @@ for i in range(n_combs):
 
     # create an identifier for combination
     key = f"{hidden_size}_{out_size}_{hidden_layers}_{dropout}_{learning_rate}_{loss}"
-    key = "200_200_1_0.0_0.0005_SmoothL1"
 
     # instantiate model using combination of parameters
     model = MatchNN(n_features, [hidden_size] * hidden_layers, out_size, [dropout] * hidden_layers)
