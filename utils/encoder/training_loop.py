@@ -1,3 +1,13 @@
+"""
+Training Loop
+==========================================================
+Controls training / validation loops for MatchNN. Returns top F1 score and model parameters associated with it.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 __all__ = ["train_loop"]
 
 import torch

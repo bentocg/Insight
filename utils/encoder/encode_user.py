@@ -1,3 +1,15 @@
+"""
+Encode user
+==========================================================
+User encoder class and preprocessing helpers. MimMaxScaler mainly to replicate training preprocessing. User encoder
+interfaces MatchNN to arrays of raw user data to produce user encodings.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
+
 __all__ = ['encode_user', 'MinMaxScaler']
 
 from scipy.spatial.distance import cosine

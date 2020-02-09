@@ -1,3 +1,15 @@
+"""
+Extract pairs
+==========================================================
+Extracts training / validation pairs from observation data and user data. Pairs are located by searching eBird
+observations for users bearing the same value for the 'GROUP IDENTIFIER' column. Pairs are labelled according to
+how much of the users' birding activity is represented by that pair.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 import time
 from argparse import ArgumentParser
 from collections import Counter

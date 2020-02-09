@@ -1,3 +1,14 @@
+"""
+Read eBird
+==========================================================
+Reads raw eBird text files and saves columns of interest. Reads .txt in chunks and appends them to an existing
+observations .csv file.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 __all__ = ['load_ebird']
 
 import time

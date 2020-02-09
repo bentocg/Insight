@@ -1,3 +1,16 @@
+"""
+Process eBird
+==========================================================
+Combines observation rows pertaining to a single user into summary statistics for that user. Requires a large amount
+of memory to load the entire observation .csv file. Users are processed in parallel using a python processing pool.
+Getting user centroids is a O(n^2) operation, which may take as long as two days for some users.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
+
 __all__ = ['get_user_data']
 
 import datetime

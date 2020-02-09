@@ -1,3 +1,13 @@
+"""
+MatchNN
+==========================================================
+Siamese network inspired modular Feed-forward architecture. Trained to distinguish suitable pairs of users to unsuitable
+ones.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
 __all__ = ['MatchNN']
 
 import torch.nn as nn

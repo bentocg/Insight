@@ -1,3 +1,14 @@
+"""
+Train Encoder NN
+===========================================================
+Training / Hyperparameter search for MatchNN. Tries random combinations of hyperparameters keeping the one with the
+highest f1 score.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 import time
 
 import numpy as np

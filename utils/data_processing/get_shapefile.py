@@ -1,3 +1,14 @@
+"""
+Get Shapefile
+==========================================================
+Creates an ESRI shapefile from a csv file with eBird users. User locations are converted to shapely Point instances.
+Resulting file is saved as a '.shp' version of the users database.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 from argparse import ArgumentParser
 
 import geopandas as gpd

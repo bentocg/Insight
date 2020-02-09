@@ -1,9 +1,18 @@
+"""
+Match Dataset
+==========================================================
+PyTorch dataset construct to train MatchNN. Returns a pair of users and a binary y value for that pair when requested.
+
+Author: Bento Gonçalves
+License: MIT
+Copyright: 2020-2021
+"""
+
 __all__ = ['MatchDataset']
 
 import numpy as np
-
-from torch.utils.data import Dataset
 from sklearn.preprocessing import minmax_scale
+from torch.utils.data import Dataset
 
 
 class MatchDataset(Dataset):
