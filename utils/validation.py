@@ -10,7 +10,8 @@ Copyright: 2020-2021
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
+from utils.encoder.encode_user import MinMaxScaler
 
 
 # helper function to drop columns not used by the model
@@ -36,6 +37,16 @@ user_data = pd.read_csv('../Datasets/users_NA_2005-2019.csv', index_col=0)
 val_users = set(list(val_pairs['user_1']) + list(val_pairs['user_2']))
 user_data = user_data.loc[val_users]
 
+# get min max scaling
+with open('../utils/users_train.txt', 'r') as src:
+    check_train = src.readline().strip().split(' ')
+
+# get preprocessing scaling from training users
+users_train = user_data.loc[user_data.sample_checklist.isin(check_train)]
+users_train = drop_unused(users_train)
+preprocessing = MinMaxScaler()
+preprocessing.fit(users_train)
+
 # drop categorical columns and fill missing values
 user_data = drop_unused(user_data)
 user_data = user_data.fillna(0)
@@ -47,22 +58,33 @@ y = np.array(val_labels)
 
 
 # cosine distance between covariates
-def raw_cosine(x1, x2):
+def cosine(x1, x2):
     if cosine_similarity(x1, x2) >= 0.5:
         return 1
     else:
         return 0
 
 
+# euclidean distance between covariates
+def euclidean(x1, x2, threshold=999999):
+    if euclidean_distances(x1, x2) <= threshold:
+        return 1
+    else:
+        return 0
+
+
 # validate models
-baselines = {'cosine': [],
-             'random': []}
+metrics = ['euclidean', 'cosine', 'random']
+baselines = {metric: [] for metric in metrics}
 for idx in range(len(y)):
-    # get baselines for baselines
-    cos_out = raw_cosine(x1[idx, :].reshape([1, -1]),
-                         x2[idx, :].reshape([1, -1]))
+    # get output for baselines
+    euc_out = euclidean(preprocessing.rescale(x1[idx, :].reshape([1, -1]), tensor=False),
+                        preprocessing.rescale(x2[idx, :].reshape([1, -1]), tensor=False))
+    cos_out = cosine(x1[idx, :].reshape([1, -1]),
+                     x2[idx, :].reshape([1, -1]))
     random_out = np.random.randint(2)
 
+    baselines['euclidean'].append(euc_out)
     baselines['cosine'].append(cos_out)
     baselines['random'].append(random_out)
 
@@ -71,16 +93,11 @@ for base in baselines:
     baselines[base] = np.array(baselines[base])
 
 # get metrics
-true_positives = {'cosine': 0,
-                  'random': 0}
-false_positives = {'cosine': 0,
-                   'random': 0}
-false_negatives = {'cosine': 0,
-                   'random': 0}
-recall = {'cosine': 0,
-          'random': 0}
-precision = {'cosine': 0,
-             'random': 0}
+true_positives = {metric: 0 for metric in metrics}
+false_positives = {metric: 0 for metric in metrics}
+false_negatives = {metric: 0 for metric in metrics}
+recall = {metric: 0 for metric in metrics}
+precision = {metric: 0 for metric in metrics}
 
 for base in baselines:
     true_positives[base] = np.sum(baselines[base][y == 1])

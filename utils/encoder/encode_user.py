@@ -31,13 +31,16 @@ class MinMaxScaler():
         self.min = [min(reference_db.iloc[:, idx]) for idx in range(reference_db.shape[1])]
         self.max = [max(reference_db.iloc[:, idx]) for idx in range(reference_db.shape[1])]
 
-    def rescale(self, input_vec):
+    def rescale(self, input_vec, tensor=True):
         scaled_vec = []
         for idx, ele in enumerate(input_vec):
             ele_std = (ele - self.min[idx]) / (self.max[idx] - self.min[idx])
             ele_scaled = ele_std * (self.max[idx] - self.min[idx]) + self.min[idx]
             scaled_vec.append(ele_scaled)
-        return torch.tensor(scaled_vec)
+        if tensor:
+            return torch.tensor(scaled_vec)
+        else:
+            return scaled_vec
 
 
 class UserEncoder():
