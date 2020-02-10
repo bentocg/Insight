@@ -190,3 +190,14 @@ if generate:
         st.text(
             f'No available matches for {user.user_name} within {max_distance} miles, please increase maximum distance')
     st.text(' ')
+
+st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
+                    unsafe_allow_html=True)
+st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
+                    'over 100.000 active eBird users in the US. It finds good partners by matching the users birding '
+                    'preferences with encodings for other eBird users processed by a siamese neural network trained to '
+                    'distinguish suitable matches from unsuitable ones. With only a few clicks, birders can be pointed '
+                    'to ideal partners which they might otherwise never meet.')
+
+st.sidebar.markdown('## :octocat:'
+                    'https://github.com/bentocg/Insight')
