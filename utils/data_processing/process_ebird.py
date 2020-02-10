@@ -41,12 +41,12 @@ def handle_numerical(nums):
 
 
 # processing function
-def get_user_data(user_data, bird_stats, latest=2019):
+def get_user_data(user_data, bird_stats: str, latest: int = 2019):
     """
     Helper function to process data from observations of a single user
-    :param user_data:
-    :param bird_stats:
-    :param latest:
+    :param user_data: dataframe with rows for user observation
+    :param bird_stats: path to  .csv with traits for bird species
+    :param latest: year to define if a user is active
     :return:
     """
 
