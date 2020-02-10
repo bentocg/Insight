@@ -14,13 +14,28 @@ import torch
 import torch.optim as torch_optim
 
 
-def get_optimizer(model, lr=0.001):
+def get_optimizer(model, lr: float = 0.001):
+    """
+    Spawns a PyTorch AdamW optimizer for a model
+    :param model: pytorch model
+    :param lr: learning rate
+    :return:
+    """
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optim = torch_optim.AdamW(parameters, lr=lr)
     return optim
 
 
 def train_model(model, optim, train_dl, loss_fn, use_gpu=False):
+    """
+    Controls training loop for MatchNN
+    :param model: pytorch model instance
+    :param optim: pytorch optimizer
+    :param train_dl: training dataloader on top of MatchDataset
+    :param loss_fn: loss function to train model
+    :param use_gpu: boolean for whether GPU will be used
+    :return: loss
+    """
     model.train()
     total = 0
     sum_loss = 0
@@ -39,6 +54,14 @@ def train_model(model, optim, train_dl, loss_fn, use_gpu=False):
 
 
 def val_loss(model, valid_dl, loss_fn, use_gpu=False):
+    """
+    Controls validation loop for MatchNN
+    :param model: pytorch model
+    :param valid_dl: pytorch dataloader on top of MatchDataset
+    :param loss_fn: loss function
+    :param use_gpu: boolean for whether or not GPU will be used
+    :return: list with loss, precision and recall
+    """
     model.eval()
     total = 0
     sum_loss = 0
@@ -65,6 +88,17 @@ def val_loss(model, valid_dl, loss_fn, use_gpu=False):
 
 
 def train_loop(model, epochs, loss_fn, train_dl, valid_dl, use_gpu=False, lr=0.01):
+    """
+    Loop between training and validation cycles through n epochs
+    :param model: pytorch model
+    :param epochs: number of epochs
+    :param loss_fn: loss function
+    :param train_dl: pytorch dataloder on top of MatchDataset(training)
+    :param valid_dl: pytorch dataloder on top of MatchDataset(validation)
+    :param use_gpu: boolean for whether or not GPU will be used for computations
+    :param lr: learning rate
+    :return: best f1 score and corresponding model state dict for best parameters
+    """
     max_f1 = 0
     max_params = {}
     optim = get_optimizer(model, lr=lr)

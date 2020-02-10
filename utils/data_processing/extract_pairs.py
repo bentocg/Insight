@@ -27,7 +27,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def find_matches(group_obs):
+def find_matches(group_obs) -> str:
     """
     Helper function to find pairs of users for validation
     :param group_obs: pandas DataFrame with all observations within one group checklist

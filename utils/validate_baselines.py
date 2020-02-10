@@ -66,7 +66,7 @@ def cosine(x1, x2):
 
 
 # euclidean distance between covariates
-def euclidean(x1, x2, threshold=999999):
+def euclidean(x1, x2, threshold=10E18):
     if euclidean_distances(x1, x2) <= threshold:
         return 1
     else:
@@ -107,4 +107,4 @@ for base in baselines:
     precision[base] = true_positives[base] / (true_positives[base] + false_positives[base])
 
     # print precision and recall
-    print(f"{base}: precision = {precision[base]}, recall = {recall[base]}")
+    print(f"{base}: precision = {precision[base]}, recall = {recall[base]}, F1 = {recall[base] * precision[base]}")

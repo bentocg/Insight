@@ -9,18 +9,14 @@ License: MIT
 Copyright: 2020-2021
 """
 
-
 __all__ = ['encode_user', 'MinMaxScaler']
 
-from scipy.spatial.distance import cosine
-from sklearn.preprocessing import normalize
 import torch
-from utils.encoder.match_nn import MatchNN
 
 
-class MinMaxScaler():
+class MinMaxScaler:
     """
-    Helper to scale input users to the
+    Helper to scale input users to according to a reference dataset
     """
 
     def __init__(self):
@@ -43,7 +39,10 @@ class MinMaxScaler():
             return scaled_vec
 
 
-class UserEncoder():
+class UserEncoder:
+    """
+    Class to apply neural net encoding to user parameter vectors
+    """
     def __init__(self, preprocessing, encoder):
         self.encoder = encoder
         self.preprocessing = preprocessing

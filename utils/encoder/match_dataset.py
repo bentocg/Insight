@@ -18,10 +18,11 @@ from torch.utils.data import Dataset
 class MatchDataset(Dataset):
     def __init__(self, x1, x2, y):
         """
+        Pytorch Dataset to train MatchNN. Takes two inputs at once for a single label.
 
-        :param x1:
-        :param x2:
-        :param y:
+        :param x1: covariate vector for user 1
+        :param x2: covariate vector for user 2
+        :param y: whether users 1 and 2 are a good match
         """
 
         # get length

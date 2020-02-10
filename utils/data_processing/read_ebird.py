@@ -27,13 +27,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_ebird(filename: str, period: list, cores: int = 1, output: str = 'observation_data.csv', rows: int = 10e5):
+def load_ebird(filename: str, period: list, output: str = 'observation_data.csv', rows: int = 10e5):
     """
     eBird database '.txt' file muncher. Reads observations from text file by chunks and writes data to a '.csv' file
     sorted by observer ID and date.
     :param filename: input file
     :param period: starting year, filters data before starting year
-    :param cores
     :param output: path to output .csv file
     :param rows: number of rows in a chunk
     :return: None
