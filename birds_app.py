@@ -21,7 +21,8 @@ from utils.encoder.match_nn import MatchNN
 
 
 # helper function to preprocess dataframes
-def drop_unused(dataframe, unused=['geometry', 'latitude', 'longitude', 'sample_che', 'user_name', 'state']):
+def drop_unused(dataframe, unused=['geometry', 'latitude', 'longitude', 'sample_che', 'user_name', 'state',
+                                   'profile']):
     dataframe = dataframe.drop(unused, axis=1)
     dataframe = dataframe.fillna(0)
     return dataframe
@@ -57,7 +58,7 @@ def load_data(path='Datasets/Shapefiles/users_US_2005-2019.shp'):
 def load_encodings(data, preprocessing):
     # read model
     model = MatchNN()
-    model.load_state_dict(torch.load('Saved_models/MatchNN_200_200_2_0.pth'))
+    model.load_state_dict(torch.load('Saved_models/MatchNN_100_500_1_0.pth'))
     model.eval()
 
     # get encodings
@@ -68,7 +69,7 @@ def load_encodings(data, preprocessing):
     data = data.astype(np.float32).values
 
     # generate encodings of existing users
-    encodings = np.zeros([data.shape[0], 200])
+    encodings = np.zeros([data.shape[0], 500])
     for i in range(data.shape[0]):
         encodings[i, :] = encoder.encode_user(data[i, :].reshape([1, -1]))
 
@@ -79,6 +80,8 @@ def load_encodings(data, preprocessing):
 # helper function to get k-nearest neighbors in cosine distance space
 def find_k_nearest(user, encodings, k=10):
     similarity = []
+
+    # get cosine similarity between user and other users
     for idx in range(len(encodings)):
         try:
             similarity.append([idx, cosine_similarity(user, encodings[idx].reshape([1, -1]))])
@@ -86,7 +89,9 @@ def find_k_nearest(user, encodings, k=10):
             print(f'Could not get similarity between user and row {idx}')
             similarity.append([idx, 0])
 
-    return [ele[0] for ele in sorted(similarity, key=lambda x: x[1])[:k]]
+    # sort and extract k top similarity values
+    matches = [ele[0] for ele in sorted(similarity, key=lambda x: x[1], reverse=True)[:k]]
+    return matches
 
 
 st.markdown('# <span style="color:green"> **Birds of a Feather** </span>:duck:',
@@ -103,18 +108,8 @@ users, preprocessing = load_data()
 # get encodings and encoder
 encodings = load_encodings(users, preprocessing)
 
-# filter by state
-# state = st.sidebar.selectbox("Select state", sorted(set(users.state)), 0)
-# filtered_users = filtered_users.loc[filtered_users.state == state]
-# filtered_enc = filtered_enc[[filtered_users.state == state]]
-
-# filter by period
-
-
 # get user information
 states = sorted(set(users.state))
-# user_exists = st.radio("Existing eBird user? (with a minimum of 3 checklists)", ['Yes', 'No'], 0)
-# if user_exists:
 user_state = st.sidebar.selectbox("User state", states, 34)
 input_users = users.loc[users.state == user_state]
 user_name = st.sidebar.selectbox("User name", list(input_users['user_name']))
@@ -122,15 +117,19 @@ user = input_users.loc[input_users.user_name == user_name]
 lat = user['latitude']
 lon = user['longitude']
 
+# remove user from dataframe
+filtered_users = users.loc[users.user_name != user_name]
+filtered_enc = encodings[users.user_name != user_name]
+
 # filters
 st.sidebar.markdown('## <span style="color:green"> **Filters:**  </span>',
                     unsafe_allow_html=True)
 
 # by state
 target_state = st.sidebar.selectbox("Target state", states, 34)
-state_users = users.state == target_state
-filtered_users = users.loc[state_users]
-filtered_enc = encodings[state_users]
+state_users = filtered_users.state == target_state
+filtered_users = filtered_users.loc[state_users]
+filtered_enc = filtered_enc[state_users]
 
 # by distance
 if target_state == user_state:
@@ -140,15 +139,15 @@ if target_state == user_state:
 
     # filter results by distance
     user_buffer = user_loc.buffer(max_distance / 69)
-    within = filtered_users.within(user_buffer)
+    within = np.array(filtered_users.within(user_buffer))
     filtered_users = filtered_users.loc[within]
     filtered_enc = filtered_enc[within]
 
-# by location
+# filter results by period
 active_since = st.sidebar.slider(label='active since (year)', min_value=2005, max_value=2020, value=2019)
-older = filtered_users.since >= (2019 - active_since)
+older = np.array(filtered_users.since >= (2019 - active_since))
 filtered_users = filtered_users.loc[older]
-filtered_enc = filtered_enc[[older]]
+filtered_enc = filtered_enc[older]
 
 # get number of matches
 n_matches = st.sidebar.number_input("Top N matches", min_value=1, max_value=len(filtered_users),
@@ -161,7 +160,7 @@ if generate:
 
     # start encoder
     model = MatchNN()
-    model.load_state_dict(torch.load('Saved_models/MatchNN_200_200_2_0.pth'))
+    model.load_state_dict(torch.load('Saved_models/MatchNN_100_500_1_0.pth'))
     model.eval()
     encoder = UserEncoder(preprocessing, model)
 
@@ -169,26 +168,46 @@ if generate:
     if len(filtered_users) > 0:
 
         # get match for user
-        user_num = user.drop(['geometry', 'latitude', 'longitude', 'sample_che', 'user_name', 'state'], axis=1)
+        user_num = user.drop(['geometry', 'latitude', 'longitude', 'sample_che', 'user_name', 'state', 'profile'],
+                             axis=1)
         user_num = user_num.astype(np.float32).values
         encoded_user = encoder.encode_user(user_num.reshape([1, -1]))
         matches = find_k_nearest(encoded_user, filtered_enc, n_matches)
 
         # plot map
-        st.map(filtered_users)
+        plot_users = filtered_users[['latitude', 'longitude']]
+        match_users = plot_users.iloc[matches]
+        lat = match_users.iloc[0]['latitude']
+        lon = match_users.iloc[0]['longitude']
+        match_users['pos'] = [300 + (1 / (ele + 1) * 350) for ele in range(len(match_users))]
+        st.deck_gl_chart(
+            viewport={
+                'latitude': lat,
+                'longitude': lon,
+                'zoom': 11,
+                'pitch': 50,
+            },
+            layers=[
+                {'type': 'ScatterplotLayer',
+                 'data': plot_users,
+                 'getFillColor': [90, 0, 0]
+                 },
+                {'type': 'ScatterplotLayer',
+                 'data': match_users,
+                 'getRadius': "pos",
+                 'getFillColor': [0, 100, 0],
+
+                 },
+            ])
 
         # display top results
         st.markdown('## Best matches :trophy:')
-        first = filtered_users.iloc[matches[0]]
-        second = filtered_users.iloc[matches[1]]
-        third = filtered_users.iloc[matches[2]]
-        st.markdown(f'1. {first.user_name} -> {first.sample_che}')
-        st.markdown(f'2. {second.user_name} -> {second.sample_che}')
-        st.markdown(f'3. {third.user_name} -> {third.sample_che}')
+        for idx, match in enumerate(matches):
+            st.markdown(f'{idx + 1}. {filtered_users.iloc[match].user_name} -> {filtered_users.iloc[match].profile}')
 
     else:
         st.text(
-            f'No available matches for {user.user_name} within {max_distance} miles, please increase maximum distance')
+            f'No available matches for {user.user_name} in {target_state} with current filters')
     st.text(' ')
 
 st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
@@ -199,5 +218,4 @@ st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential bir
                     'distinguish suitable matches from unsuitable ones. With only a few clicks, birders can be pointed '
                     'to ideal partners which they might otherwise never meet.')
 
-st.sidebar.markdown('## :octocat:'
-                    'https://github.com/bentocg/Insight')
+st.sidebar.markdown('#### Source code: https://github.com/bentocg/Insight')

@@ -37,9 +37,9 @@ class MatchNN(nn.Module):
 
     def __init__(self,
                  input_size=24,
-                 lin_layer_sizes=tuple([200, 200]),
-                 output_size=200,
-                 lin_layer_dropouts=tuple([0., 0.])):
+                 lin_layer_sizes=tuple([100]),
+                 output_size=500,
+                 lin_layer_dropouts=tuple([0.])):
 
         super().__init__()
         self.droput_layers = nn.ModuleList(
