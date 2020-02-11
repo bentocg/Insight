@@ -7,12 +7,6 @@ from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-#
-# def parse_args():
-#     parser = ArgumentParser('Script to generate dataframe with user embeddings')
-#     parser.add_argument('--input')
-
-
 # globals
 CUTOFF = 15
 SEED = 20150101

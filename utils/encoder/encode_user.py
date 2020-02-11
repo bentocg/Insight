@@ -9,7 +9,7 @@ License: MIT
 Copyright: 2020-2021
 """
 
-__all__ = ['encode_user', 'MinMaxScaler']
+__all__ = ['UserEncoder', 'MinMaxScaler']
 
 import torch
 
@@ -43,6 +43,7 @@ class UserEncoder:
     """
     Class to apply neural net encoding to user parameter vectors
     """
+
     def __init__(self, preprocessing, encoder):
         self.encoder = encoder
         self.preprocessing = preprocessing
