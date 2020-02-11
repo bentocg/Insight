@@ -62,17 +62,23 @@ def get_profile(user_data, out: str):
 
 def main():
     args = parse_args()
-    # read checklist data
+
+    # read existing checklists
+    checklists = []
+    with open('Datasets/profiles.txt') as src:
+        for line in src:
+            checklists.append(line.split('_')[0])
+
+    # read user data and get remaining checklists
     user_data = gpd.read_file(args.input_users).loc[:, ['user_name', 'sample_che']]
+    user_data = user_data.loc[-user_data['sample_che'].isin(checklists)]
     check_user = []
     for _, row in user_data.iterrows():
         check_user.append([row['sample_che'], row['user_name']])
 
-    # start multiprocessing pool
+    # start multiprocessing pool and get user profiles
     pool = Pool(24)
     pool.map(partial(get_profile, out=args.output_txt), check_user)
-    #for _, row in user_data.iterrows():
-    #    get_profile(row, out=args.output_txt)
 
 
 if __name__ == "__main__":
