@@ -27,7 +27,7 @@ from shapely.geometry import Point
 def parse_args():
     parser = ArgumentParser("Script to process eBird observations into user data")
     parser.add_argument('--input_csv', '-i', type=str, help='path to observations .csv file')
-    parser.add_argument('--cores', '-c', type=int, help='number of cores for parallel processing', default=1)
+    parser.add_argument('--cores', '-c', type=int, help='number of cores for parallel processing', default=-1)
     parser.add_argument('--output', '-o', type=str, help='path to output csv file', default='observation_data.csv')
     return parser.parse_args()
 

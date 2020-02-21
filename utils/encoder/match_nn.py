@@ -13,7 +13,6 @@ __all__ = ['MatchNN']
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class MatchNN(nn.Module):
     """
     Parameters

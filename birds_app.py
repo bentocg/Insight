@@ -98,6 +98,8 @@ st.markdown('# <span style="color:green"> **Birds of a Feather** </span>:duck:',
             unsafe_allow_html=True)
 
 '$$\hspace{0.5cm}$$ *Bringing birders together* '
+'Please input your eBird user name and preferences for matches on the sideboard'
+'Press **generate matches** to get a map of potential birding partners'
 
 st.sidebar.markdown('## <span style="color:green"> **User inputs:**  </span>',
                     unsafe_allow_html=True)
@@ -179,7 +181,7 @@ if generate:
         match_users = plot_users.iloc[matches]
         lat = match_users.iloc[0]['latitude']
         lon = match_users.iloc[0]['longitude']
-        match_users['pos'] = [300 + (1 / (ele + 1) * 350) for ele in range(len(match_users))]
+        match_users.loc[:, 'pos'] = [300 + (1 / (ele + 1) * 350) for ele in range(len(match_users))]
         st.deck_gl_chart(
             viewport={
                 'latitude': lat,
