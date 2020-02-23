@@ -140,7 +140,7 @@ users, preprocessing = load_data()
 encodings = load_encodings(users, preprocessing)
 
 # get user information
-user_name = st.text_input("Please input your eBird profile name")
+user_name = st.text_input("Please input your eBird profile name to get matches")
 if user_name not in list(users.user_name):
     if len(user_name) > 0:
         st.markdown('User not found, please try again.')
@@ -272,12 +272,12 @@ elif user_name != '':
             f'change target location.')
     st.text(' ')
 
-    st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
-                        unsafe_allow_html=True)
-    st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
-                        'over 100.000 active eBird users in the US. It finds good partners by matching the users birding '
-                        'preferences with encodings for other eBird users processed by a siamese neural network trained to '
-                        'distinguish suitable matches from unsuitable ones. With only a few clicks, birders can be pointed '
-                        'to ideal partners which they might otherwise never meet.')
+st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
+                    unsafe_allow_html=True)
+st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
+                    'over 100.000 active eBird users in the US. It finds good partners by matching the users birding '
+                    'preferences with encodings for other eBird users processed by a siamese neural network trained to '
+                    'distinguish suitable matches from unsuitable ones. With only a few clicks, birders can be pointed '
+                    'to ideal partners which they might otherwise never meet.')
 
-    st.sidebar.markdown('#### Source code: https://github.com/bentocg/Insight')
+st.sidebar.markdown('#### Source code: https://github.com/bentocg/Insight')
