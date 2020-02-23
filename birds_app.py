@@ -151,8 +151,8 @@ elif user_name != '':
     if len(user) > 1:
         county = st.selectbox('Select county', options=list(user.county))
         user = user.loc[user.county == county]
-    lat = user['latitude']
-    lon = user['longitude']
+    lat = user['latitude'].values[0]
+    lon = user['longitude'].values[0]
 
     # remove user from dataframe
     filtered_users = users.loc[users.user_name != user_name]
@@ -222,7 +222,10 @@ elif user_name != '':
 
         # start folium map
         matches_map = folium.Map(location=[lat, lon], width=660, height=410,
-                                 tiles='Stamen Terrain', zoom_start=10 - (max_distance / 10))
+                                 tiles='Stamen Terrain')
+
+        matches_map.fit_bounds([[lat - max_distance / 100, lon - max_distance / 100],
+                                [lat + max_distance / 100, lon + max_distance / 100]])
 
         # add marker for user
         folium.Marker(tuple([lat, lon]), color='green').add_to(matches_map)
@@ -236,7 +239,11 @@ elif user_name != '':
         for idx, match in match_users.iterrows():
             n += 1
             folium.Circle(tuple([match.latitude, match.longitude]), color='black',
-                          weight=1.3, fill_color='red', tooltip=filtered_users.loc[idx]['user_name'],
+                          weight=1.3, fill_color='red', tooltip=f"{filtered_users.loc[idx]['user_name']}, "
+                                                                f"eBirder since: "
+                                                                f" {int(2019 - filtered_users.loc[idx]['since'])}, "
+                                                                f"Species seen: "
+                                                                f"{int(filtered_users.loc[idx]['n_species'])}",
                           popup=filtered_users.loc[idx]['profile'],
                           fill=True, fill_opacity=0.4, radius=match.pos).add_to(matches_map)
             folium.Marker(tuple([match.latitude, match.longitude]),
