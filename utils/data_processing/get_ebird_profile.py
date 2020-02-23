@@ -9,7 +9,6 @@ License: MIT
 Copyright: 2020-2021
 """
 
-import re
 from argparse import ArgumentParser
 from functools import partial
 from multiprocessing import Pool
@@ -57,7 +56,7 @@ def get_profile(user_data, out: str):
             src.write(f"{checklist_url}_{profile}\n")
     except TypeError:
         with open(out, 'a') as src:
-            src.write(f"{checklist_url}_{checklist_url}\n")
+            src.write(f"{checklist_url}_None\n")
 
 
 def main():
