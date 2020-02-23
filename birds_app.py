@@ -146,10 +146,10 @@ if user_name not in list(users.user_name):
     # instructions
     st.sidebar.markdown('## <span style="color:green"> **Instructions:**  </span>',
                         unsafe_allow_html=True)
-    st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
-                        'over 100.000 active eBird users in the US. To start, input your eBird profile name to view'
-                        'a map with suggested birding partners, ordered by goodness of match. Options for filtering'
-                        'will appear in the side panel.')
+    st.sidebar.markdown('> Birds of a Feather is a web app to recommend potential birding partners from a group of '
+                        'over 100.000 active eBird users in the US. To start, input your eBird profile name in the '
+                        'center to get a map of suggestions ordered by goodness of match. Options for filtering '
+                        'results will appear in the side panel after a user name is provided.')
 
     if len(user_name) > 0:
         st.markdown('User not found, please try again.')
@@ -283,7 +283,7 @@ elif user_name != '':
 
 st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
                     unsafe_allow_html=True)
-st.sidebar.markdown('Birds of a Feather finds good partners in two steps: ')
+st.sidebar.markdown('>Birds of a Feather finds good partners in two steps: ')
 st.sidebar.markdown('1. Encode your birding style by passing your eBird activity through a siamese neural network '
                     'trained to recognize what features drive successful birding pairs.')
 st.sidebar.markdown('2. Search other users the most similar'
