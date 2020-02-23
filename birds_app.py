@@ -133,6 +133,7 @@ st.markdown('# <span style="color:green"> **Birds of a Feather** </span>:duck:',
 
 '$$\hspace{0.5cm}$$ *Bringing birders together* '
 
+
 # load data
 users, preprocessing = load_data()
 
@@ -140,8 +141,16 @@ users, preprocessing = load_data()
 encodings = load_encodings(users, preprocessing)
 
 # get user information
-user_name = st.text_input("Please input your eBird profile name to get matches")
+user_name = st.text_input("Please input the name associated with your eBird account to get matches.")
 if user_name not in list(users.user_name):
+    # instructions
+    st.sidebar.markdown('## <span style="color:green"> **Instructions:**  </span>',
+                        unsafe_allow_html=True)
+    st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
+                        'over 100.000 active eBird users in the US. To start, input your eBird profile name to view'
+                        'a map with suggested birding partners, ordered by goodness of match. Options for filtering'
+                        'will appear in the side panel.')
+
     if len(user_name) > 0:
         st.markdown('User not found, please try again.')
     st.image(display_home(), use_column_width=True)
@@ -181,7 +190,7 @@ elif user_name != '':
 
     # user loc
     user_loc = Point(lon, lat)
-    max_distance = st.sidebar.number_input(label='maximum distance (mi)', min_value=1, max_value=10000, value=5)
+    max_distance = st.sidebar.number_input(label='maximum distance (mi)', min_value=1, max_value=10000, value=10)
 
     # filter results by distance
     user_buffer = user_loc.buffer(max_distance / 69)
@@ -274,10 +283,10 @@ elif user_name != '':
 
 st.sidebar.markdown('## <span style="color:green"> **How it works:**  </span>',
                     unsafe_allow_html=True)
-st.sidebar.markdown('>Birds of a Feather is a web app to recommend potential birding partners from a list of '
-                    'over 100.000 active eBird users in the US. It finds good partners by matching the users birding '
-                    'preferences with encodings for other eBird users processed by a siamese neural network trained to '
-                    'distinguish suitable matches from unsuitable ones. With only a few clicks, birders can be pointed '
-                    'to ideal partners which they might otherwise never meet.')
+st.sidebar.markdown('Birds of a Feather finds good partners in two steps: ')
+st.sidebar.markdown('1. Encode your birding style by passing your eBird activity through a siamese neural network '
+                    'trained to recognize what features drive successful birding pairs.')
+st.sidebar.markdown('2. Search other users the most similar'
+                    'encodings to yours using the cosine similarity between encodings.')
 
 st.sidebar.markdown('#### Source code: https://github.com/bentocg/Insight')
