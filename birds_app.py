@@ -253,7 +253,7 @@ elif user_name != '':
                                                                 f" {int(2019 - filtered_users.loc[idx]['since'])}, "
                                                                 f"Species seen: "
                                                                 f"{int(filtered_users.loc[idx]['n_species'])}",
-                          popup=filtered_users.loc[idx]['profile'],
+                          popup=f"<a href={filtered_users.loc[idx]['profile']} target=_blank> eBird profile </a>",
                           fill=True, fill_opacity=0.4, radius=match.pos).add_to(matches_map)
             folium.Marker(tuple([match.latitude, match.longitude]),
                           icon=folium.DivIcon(
